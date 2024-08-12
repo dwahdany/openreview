@@ -14,6 +14,7 @@ import re
 import urllib.parse
 from urllib.parse import urlparse, parse_qs
 
+
 def parse_openreview_url(url):
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
@@ -139,6 +140,10 @@ def process_note(note, is_rebuttal=False):
 
 markdown_output = generate_markdown([note.__dict__ for note in notes])
 print(markdown_output)
+markdown_filename = "output_document.md"
+with open(markdown_filename, "w", encoding="utf-8") as md_file:
+    md_file.write(markdown_output)
+print(f"Markdown file created: {markdown_filename}")
 
 
 def markdown_to_odt(markdown_text, output_filename):
