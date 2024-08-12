@@ -11,7 +11,7 @@ This script fetches paper details, reviews, and rebuttals from OpenReview and co
 
 ## Requirements
 
-- Python 3.6+
+- Python (tested with 3.11)
 - Required packages: openreview, pypandoc, markdown
 
 A conda environment file (`env.yml`) is provided for easy setup.
