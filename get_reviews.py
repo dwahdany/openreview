@@ -140,7 +140,7 @@ def process_note(note, is_rebuttal=False):
 
 markdown_output = generate_markdown([note.__dict__ for note in notes])
 print(markdown_output)
-markdown_filename = "output_document.md"
+markdown_filename = f"{forum_id}.md"
 with open(markdown_filename, "w", encoding="utf-8") as md_file:
     md_file.write(markdown_output)
 print(f"Markdown file created: {markdown_filename}")
@@ -156,4 +156,4 @@ def markdown_to_odt(markdown_text, output_filename):
 
 
 # Convert to ODT
-markdown_to_odt(markdown_output, "output_document.odt")
+markdown_to_odt(markdown_output, f"{forum_id}.odt")

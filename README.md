@@ -1,6 +1,6 @@
-# OpenReview Paper Fetcher
+# OpenReview Review Fetcher
 
-This script fetches paper details, reviews, and rebuttals from OpenReview and converts them to a formatted ODT document.
+This script fetches paper details, reviews, and rebuttals from OpenReview and converts them to formatted ODT and Markdown documents.
 
 ## Features
 
@@ -33,7 +33,7 @@ conda activate openreview
 1. Run the script: `python get_reviews.py`
 2. Enter the full OpenReview URL when prompted (like `https://openreview.net/forum?id=XXXXXXXXXXXX&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DConference.org%2FYYYY%2FMeeting%2FAuthors%23your-submissions)`)
 3. Provide your OpenReview username and password
-4. The script will generate an `output_document.odt` and `output_document.md` file in the same directory
+4. The script will generate an `$FORUM_ID.odt` and `$FORUM_ID.md` file in the same directory, where `$FORUM_ID` is the ID of the forum extracted from step 2.
 
 ## Note
 
