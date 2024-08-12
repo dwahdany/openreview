@@ -25,7 +25,7 @@ conda env create -f env.yml
 
 2. Activate the environment:
 ```
-conda activate openreview-fetcher
+conda activate openreview
 ```
 
 ## Usage
