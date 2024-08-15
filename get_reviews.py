@@ -291,6 +291,16 @@ if __name__ == "__main__":
                 delete_credentials()
             else:
                 print("Cached credentials were not deleted.")
+        elif "Invalid username or password" in str(e):
+            print("Error: Invalid username or password.")
+            delete_choice = input(
+                "Would you like to delete the cached credentials? (y/N): "
+            ).lower()
+            if delete_choice == "y":
+                delete_credentials()
+                print("Please run the script again and enter your credentials.")
+            else:
+                print("Cached credentials were not deleted.")
         else:
             print(f"An OpenReview error occurred: {e}")
         exit(1)
