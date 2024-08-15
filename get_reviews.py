@@ -158,11 +158,52 @@ def process_full_paper(paper):
     markdown = f"### Paper ID: {paper['id']}\n\n"
 
     content = paper["content"]
-    markdown += f"**Title:** {content['title']['value']}\n\n"
-    markdown += f"**Authors:** {', '.join(content['authors']['value'])}\n\n"
-    markdown += f"**Abstract:** {content['abstract']['value']}\n\n"
-    markdown += f"**Keywords:** {', '.join(content['keywords']['value'])}\n\n"
-    markdown += f"**TLDR:** {content['TLDR']['value']}\n\n"
+    # Essential fields that should always be present
+    essential_fields = ["title", "authors", "abstract"]
+
+    # Additional fields to check for
+    additional_fields = [
+        "keywords",
+        "primary_keywords",
+        "secondary_keywords",
+        "TLDR",
+        "venue",
+        "paperhash",
+    ]
+
+    try:
+        # Process essential fields
+        for field in essential_fields:
+            if field in content:
+                if field == "authors":
+                    markdown += f"**{field.capitalize()}:** {', '.join(content[field]['value'])}\n\n"
+                else:
+                    markdown += (
+                        f"**{field.capitalize()}:** {content[field]['value']}\n\n"
+                    )
+            else:
+                print(f"Warning: Essential field '{field}' is missing.")
+
+        # Process additional fields
+        for field in additional_fields:
+            if field in content:
+                if isinstance(content[field]["value"], list):
+                    markdown += f"**{field.capitalize()}:** {', '.join(content[field]['value'])}\n\n"
+                else:
+                    markdown += (
+                        f"**{field.capitalize()}:** {content[field]['value']}\n\n"
+                    )
+
+    except KeyError as e:
+        print(f"KeyError: {e}")
+        print("Available keys in content:")
+        for key in content.keys():
+            print(f"- {key}")
+
+        # Add available information to markdown
+        for key, value in content.items():
+            if isinstance(value, dict) and "value" in value:
+                markdown += f"**{key.capitalize()}:** {value['value']}\n\n"
 
     markdown += "---\n\n"
     return markdown
