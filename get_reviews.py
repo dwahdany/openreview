@@ -1,4 +1,6 @@
+import base64
 import getpass
+import json
 import os
 import re
 import urllib.parse
@@ -8,6 +10,68 @@ from urllib.parse import parse_qs, urlparse
 import markdown
 import openreview
 import pypandoc
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+
+def get_key():
+    # Use a fixed salt (not ideal, but better than nothing)
+    salt = b"fixed_salt_for_openreview"
+    # Use the machine's hostname as a basis for the key
+    hostname = os.uname().nodename.encode()
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(hostname))
+    return key
+
+
+def encrypt(text):
+    f = Fernet(get_key())
+    return f.encrypt(text.encode()).decode()
+
+
+def decrypt(text):
+    f = Fernet(get_key())
+    return f.decrypt(text.encode()).decode()
+
+
+def load_cached_credentials():
+    if os.path.exists("credentials.enc"):
+        with open("credentials.enc", "r") as f:
+            creds = json.loads(decrypt(f.read()))
+        return creds["username"], creds["password"]
+    return None, None
+
+
+def save_credentials(username, password):
+    creds = {"username": username, "password": password}
+    encrypted = encrypt(json.dumps(creds))
+    with open("credentials.enc", "w") as f:
+        f.write(encrypted)
+
+
+def get_credentials():
+    username, password = load_cached_credentials()
+    if username and password:
+        print("Using cached credentials.")
+        return username, password
+
+    username = input("Enter your OpenReview username: ")
+    password = getpass.getpass("Enter your OpenReview password: ")
+
+    cache_choice = input(
+        "Do you want to cache these credentials? Note that this is insecure. (y/N): "
+    ).lower()
+    if cache_choice == "y":
+        save_credentials(username, password)
+        print("Credentials cached.")
+
+    return username, password
 
 
 def get_unique_filename(base_filename):
@@ -139,8 +203,7 @@ if __name__ == "__main__":
     print(f"Extracted forum ID: {forum_id}")
     print(f"Extracted venue ID: {venue_id}")
 
-    username = input("Enter your OpenReview username: ")
-    password = getpass.getpass("Enter your OpenReview password: ")
+    username, password = get_credentials()
 
     client = openreview.api.OpenReviewClient(
         baseurl="https://api2.openreview.net",
