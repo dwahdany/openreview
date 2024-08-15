@@ -40,6 +40,14 @@ def decrypt(text):
     return f.decrypt(text.encode()).decode()
 
 
+def delete_credentials():
+    if os.path.exists("credentials.enc"):
+        os.remove("credentials.enc")
+        print("Cached credentials have been deleted.")
+    else:
+        print("No cached credentials found.")
+
+
 def load_cached_credentials():
     if os.path.exists("credentials.enc"):
         with open("credentials.enc", "r") as f:
@@ -246,23 +254,46 @@ if __name__ == "__main__":
 
     username, password = get_credentials()
 
-    client = openreview.api.OpenReviewClient(
-        baseurl="https://api2.openreview.net",
-        username=username,
-        password=password,
-    )
+    try:
+        client = openreview.api.OpenReviewClient(
+            baseurl="https://api2.openreview.net",
+            username=username,
+            password=password,
+        )
 
-    venue_group = client.get_group(venue_id)
-    notes = client.get_notes(forum=forum_id)
-    markdown_output = generate_markdown([note.__dict__ for note in notes])
-    print(markdown_output)
-    markdown_filename = f"{forum_id}.md"
-    markdown_filename = get_unique_filename(markdown_filename)
-    with open(markdown_filename, "w", encoding="utf-8") as md_file:
-        md_file.write(markdown_output)
-    print(f"Markdown file created: {markdown_filename}")
+        venue_group = client.get_group(venue_id)
+        notes = client.get_notes(forum=forum_id)
+        markdown_output = generate_markdown([note.__dict__ for note in notes])
+        print(markdown_output)
+        markdown_filename = f"{forum_id}.md"
+        markdown_filename = get_unique_filename(markdown_filename)
+        with open(markdown_filename, "w", encoding="utf-8") as md_file:
+            md_file.write(markdown_output)
+        print(f"Markdown file created: {markdown_filename}")
 
-    # Convert to ODT
-    odt_filename = f"{forum_id}.odt"
-    odt_filename = get_unique_filename(odt_filename)
-    markdown_to_odt(markdown_output, odt_filename)
+        # Convert to ODT
+        odt_filename = f"{forum_id}.odt"
+        odt_filename = get_unique_filename(odt_filename)
+        markdown_to_odt(markdown_output, odt_filename)
+    except openreview.openreview.OpenReviewException as e:
+        if "ForbiddenError" in str(e):
+            print("Error: You don't have permission to access this venue or paper.")
+            print("This could be because:")
+            print("1. You're not logged in with the correct account.")
+            print("2. You don't have the necessary permissions for this venue.")
+            print("3. The paper or venue ID might be incorrect.")
+            print("\nPlease check your credentials and the URL, then try again.")
+
+            delete_choice = input(
+                "Would you like to delete the cached credentials? (y/N): "
+            ).lower()
+            if delete_choice == "y":
+                delete_credentials()
+            else:
+                print("Cached credentials were not deleted.")
+        else:
+            print(f"An OpenReview error occurred: {e}")
+        exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        exit(1)
