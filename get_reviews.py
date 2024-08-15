@@ -1,18 +1,22 @@
-import openreview
-from operator import itemgetter
-from collections import defaultdict
-
-from operator import itemgetter
-import re
-import pypandoc
-import markdown
 import getpass
-import openreview
-from operator import itemgetter
-from collections import defaultdict
+import os
 import re
 import urllib.parse
-from urllib.parse import urlparse, parse_qs
+from operator import itemgetter
+from urllib.parse import parse_qs, urlparse
+
+import markdown
+import openreview
+import pypandoc
+
+
+def get_unique_filename(base_filename):
+    counter = 1
+    filename, extension = os.path.splitext(base_filename)
+    while os.path.exists(base_filename):
+        base_filename = f"{filename}_{counter}{extension}"
+        counter += 1
+    return base_filename
 
 
 def parse_openreview_url(url):
@@ -30,32 +34,6 @@ def parse_openreview_url(url):
         venue_id = None
 
     return forum_id, venue_id
-
-
-# Ask for the URL
-url = input("Enter the OpenReview URL: ")
-
-# Parse the URL to get forum_id and venue_id
-forum_id, venue_id = parse_openreview_url(url)
-
-if not forum_id or not venue_id:
-    print("Error: Couldn't extract forum ID or venue ID from the URL.")
-    exit(1)
-
-print(f"Extracted forum ID: {forum_id}")
-print(f"Extracted venue ID: {venue_id}")
-
-username = input("Enter your OpenReview username: ")
-password = getpass.getpass("Enter your OpenReview password: ")
-
-client = openreview.api.OpenReviewClient(
-    baseurl="https://api2.openreview.net",
-    username=username,
-    password=password,
-)
-
-venue_group = client.get_group(venue_id)
-notes = client.get_notes(forum=forum_id)
 
 
 def extract_reviewer_id(signature):
@@ -138,14 +116,6 @@ def process_note(note, is_rebuttal=False):
     return markdown
 
 
-markdown_output = generate_markdown([note.__dict__ for note in notes])
-print(markdown_output)
-markdown_filename = f"{forum_id}.md"
-with open(markdown_filename, "w", encoding="utf-8") as md_file:
-    md_file.write(markdown_output)
-print(f"Markdown file created: {markdown_filename}")
-
-
 def markdown_to_odt(markdown_text, output_filename):
     # Convert markdown to HTML
     html = markdown.markdown(markdown_text)
@@ -155,5 +125,40 @@ def markdown_to_odt(markdown_text, output_filename):
     print(f"ODT file created: {output_filename}")
 
 
-# Convert to ODT
-markdown_to_odt(markdown_output, f"{forum_id}.odt")
+if __name__ == "__main__":
+    # Ask for the URL
+    url = input("Enter the OpenReview URL: ")
+
+    # Parse the URL to get forum_id and venue_id
+    forum_id, venue_id = parse_openreview_url(url)
+
+    if not forum_id or not venue_id:
+        print("Error: Couldn't extract forum ID or venue ID from the URL.")
+        exit(1)
+
+    print(f"Extracted forum ID: {forum_id}")
+    print(f"Extracted venue ID: {venue_id}")
+
+    username = input("Enter your OpenReview username: ")
+    password = getpass.getpass("Enter your OpenReview password: ")
+
+    client = openreview.api.OpenReviewClient(
+        baseurl="https://api2.openreview.net",
+        username=username,
+        password=password,
+    )
+
+    venue_group = client.get_group(venue_id)
+    notes = client.get_notes(forum=forum_id)
+    markdown_output = generate_markdown([note.__dict__ for note in notes])
+    print(markdown_output)
+    markdown_filename = f"{forum_id}.md"
+    markdown_filename = get_unique_filename(markdown_filename)
+    with open(markdown_filename, "w", encoding="utf-8") as md_file:
+        md_file.write(markdown_output)
+    print(f"Markdown file created: {markdown_filename}")
+
+    # Convert to ODT
+    odt_filename = f"{forum_id}.odt"
+    odt_filename = get_unique_filename(odt_filename)
+    markdown_to_odt(markdown_output, odt_filename)
