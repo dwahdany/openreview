@@ -5,6 +5,7 @@ This script fetches paper details, reviews, and rebuttals from OpenReview and co
 ## Features
 
 - Extracts forum ID and venue ID from an OpenReview URL
+- Optional credential caching
 - Fetches paper details, reviews, and rebuttals
 - Generates a formatted markdown document
 - Converts the markdown to an ODT file
@@ -12,9 +13,7 @@ This script fetches paper details, reviews, and rebuttals from OpenReview and co
 ## Requirements
 
 - Python (tested with 3.11)
-- Required packages: openreview, pypandoc, markdown
-
-A conda environment file (`env.yml`) is provided for easy setup.
+- Dependencies, see conda environment file (`env.yml`)
 
 ## Setup
 
