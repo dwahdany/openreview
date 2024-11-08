@@ -5,8 +5,8 @@ import os
 import re
 import urllib.parse
 from operator import itemgetter
-from urllib.parse import parse_qs, urlparse
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import markdown
 import openreview
@@ -110,6 +110,8 @@ def parse_openreview_url(url):
 
 
 def extract_reviewer_id(signature):
+    # Reviewer_<id> : NeuRIPS 2024
+    # Program_Committee_<id> : AAAI25
     match = re.search(r"(Reviewer|Program_Committee)_(\w+)$", signature[0])
     return match.group(2) if match else None
 
@@ -224,7 +226,7 @@ def process_note(note, is_rebuttal=False):
     content = note["content"]
     for key, value in content.items():
         if isinstance(value, dict) and "value" in value:
-            markdown += f"**{key.capitalize()}:** {value['value']}\n\n"
+            markdown += f"**{key.capitalize()}:**\n {value['value']}\n\n"
 
     markdown += "---\n\n"
     return markdown
@@ -278,7 +280,7 @@ if __name__ == "__main__":
 
         # Create output directory
         output_dir = ensure_output_dir("output")
-        
+
         # Save markdown file
         markdown_filename = output_dir / f"{forum_id}.md"
         markdown_filename = get_unique_filename(str(markdown_filename))
