@@ -6,6 +6,7 @@ import re
 import urllib.parse
 from operator import itemgetter
 from urllib.parse import parse_qs, urlparse
+from pathlib import Path
 
 import markdown
 import openreview
@@ -240,6 +241,13 @@ def markdown_to_odt(markdown_text, output_filename):
     print(f"ODT file created: {output_filename}")
 
 
+def ensure_output_dir(output_dir: str) -> Path:
+    """Create output directory if it doesn't exist and return Path object."""
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    return output_path
+
+
 if __name__ == "__main__":
     # Ask for the URL
     url = input("Enter the OpenReview URL: ")
@@ -267,16 +275,21 @@ if __name__ == "__main__":
         notes = client.get_notes(forum=forum_id)
         markdown_output = generate_markdown([note.__dict__ for note in notes])
         print(markdown_output)
-        markdown_filename = f"{forum_id}.md"
-        markdown_filename = get_unique_filename(markdown_filename)
+
+        # Create output directory
+        output_dir = ensure_output_dir("output")
+        
+        # Save markdown file
+        markdown_filename = output_dir / f"{forum_id}.md"
+        markdown_filename = get_unique_filename(str(markdown_filename))
         with open(markdown_filename, "w", encoding="utf-8") as md_file:
             md_file.write(markdown_output)
         print(f"Markdown file created: {markdown_filename}")
 
-        # Convert to ODT
-        odt_filename = f"{forum_id}.odt"
-        odt_filename = get_unique_filename(odt_filename)
-        markdown_to_odt(markdown_output, odt_filename)
+        # Save ODT file
+        odt_filename = output_dir / f"{forum_id}.odt"
+        odt_filename = get_unique_filename(str(odt_filename))
+        markdown_to_odt(markdown_output, str(odt_filename))
     except openreview.openreview.OpenReviewException as e:
         if "ForbiddenError" in str(e):
             print(
