@@ -109,13 +109,15 @@ def parse_openreview_url(url):
 
 
 def extract_reviewer_id(signature):
-    match = re.search(r"Reviewer_(\w+)$", signature[0])
-    return match.group(1) if match else None
+    match = re.search(r"(Reviewer|Program_Committee)_(\w+)$", signature[0])
+    return match.group(2) if match else None
 
 
 def generate_markdown(notes):
     # Separate the full paper and other notes
-    full_paper = next((note for note in notes if note["replyto"] is None), None)
+    full_paper = next(
+        (note for note in notes if note["replyto"] is None), None
+    )
     other_notes = [note for note in notes if note["replyto"] is not None]
 
     markdown = ""
@@ -150,7 +152,9 @@ def process_note_thread(note_id, notes_by_id, depth=0):
 
     # Process the current note
     markdown += "  " * depth
-    markdown += process_note(note, is_rebuttal="Authors" in note["signatures"][0])
+    markdown += process_note(
+        note, is_rebuttal="Authors" in note["signatures"][0]
+    )
 
     # Process replies to this note
     replies = [n for n in notes_by_id.values() if n["replyto"] == note_id]
@@ -186,9 +190,7 @@ def process_full_paper(paper):
                 if field == "authors":
                     markdown += f"**{field.capitalize()}:** {', '.join(content[field]['value'])}\n\n"
                 else:
-                    markdown += (
-                        f"**{field.capitalize()}:** {content[field]['value']}\n\n"
-                    )
+                    markdown += f"**{field.capitalize()}:** {content[field]['value']}\n\n"
             else:
                 print(f"Warning: Essential field '{field}' is missing.")
 
@@ -198,9 +200,7 @@ def process_full_paper(paper):
                 if isinstance(content[field]["value"], list):
                     markdown += f"**{field.capitalize()}:** {', '.join(content[field]['value'])}\n\n"
                 else:
-                    markdown += (
-                        f"**{field.capitalize()}:** {content[field]['value']}\n\n"
-                    )
+                    markdown += f"**{field.capitalize()}:** {content[field]['value']}\n\n"
 
     except KeyError as e:
         print(f"KeyError: {e}")
@@ -234,7 +234,9 @@ def markdown_to_odt(markdown_text, output_filename):
     html = markdown.markdown(markdown_text)
 
     # Convert HTML to ODT
-    pypandoc.convert_text(html, "odt", format="html", outputfile=output_filename)
+    pypandoc.convert_text(
+        html, "odt", format="html", outputfile=output_filename
+    )
     print(f"ODT file created: {output_filename}")
 
 
@@ -277,12 +279,18 @@ if __name__ == "__main__":
         markdown_to_odt(markdown_output, odt_filename)
     except openreview.openreview.OpenReviewException as e:
         if "ForbiddenError" in str(e):
-            print("Error: You don't have permission to access this venue or paper.")
+            print(
+                "Error: You don't have permission to access this venue or paper."
+            )
             print("This could be because:")
             print("1. You're not logged in with the correct account.")
-            print("2. You don't have the necessary permissions for this venue.")
+            print(
+                "2. You don't have the necessary permissions for this venue."
+            )
             print("3. The paper or venue ID might be incorrect.")
-            print("\nPlease check your credentials and the URL, then try again.")
+            print(
+                "\nPlease check your credentials and the URL, then try again."
+            )
 
             delete_choice = input(
                 "Would you like to delete the cached credentials? (y/N): "
@@ -298,7 +306,9 @@ if __name__ == "__main__":
             ).lower()
             if delete_choice == "y":
                 delete_credentials()
-                print("Please run the script again and enter your credentials.")
+                print(
+                    "Please run the script again and enter your credentials."
+                )
             else:
                 print("Cached credentials were not deleted.")
         else:
