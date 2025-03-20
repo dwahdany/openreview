@@ -1,0 +1,13 @@
+[project]
+name = "get-openreviews"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cryptography>=44.0.2",
+    "markdown>=3.7",
+    "openreview-py>=1.47.1",
+    "pypandoc>=1.15",
+    "urllib3>=2.0.0",
+]

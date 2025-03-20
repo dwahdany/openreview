@@ -17,6 +17,7 @@ This script fetches paper details, reviews, and rebuttals from OpenReview and co
 
 ## Setup
 
+### Option 1: Using conda
 1. Create the conda environment:
 ```
 conda env create -f env.yml
@@ -26,6 +27,11 @@ conda env create -f env.yml
 ```
 conda activate openreview
 ```
+
+### Option 2: Using uv (faster)
+1. Install uv if you haven't already:
+
+2. Run it with uv `uv run get_reviews.py`
 
 ## Usage
 
